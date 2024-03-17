@@ -4,6 +4,7 @@
 FROM docker.io/bitnami/minideb:bookworm
 
 ARG TARGETARCH
+ARG MONGO_VERSION=7.0.6
 
 LABEL com.vmware.cp.artifact.flavor="sha256:c50c90cfd9d12b445b011e6ad529f1ad3daea45c26d20b00732fae3cd71f6a83" \
       org.opencontainers.image.base.name="docker.io/bitnami/minideb:bookworm" \
@@ -30,7 +31,6 @@ RUN mkdir -p /tmp/bitnami/pkg/cache/ ; cd /tmp/bitnami/pkg/cache/ ; \
       "wait-for-port-1.0.7-9-linux-${OS_ARCH}-debian-12" \
       "render-template-1.0.6-9-linux-${OS_ARCH}-debian-12" \
       "mongodb-shell-2.1.5-0-linux-${OS_ARCH}-debian-12" \
-      "mongodb-7.0.6-0-linux-${OS_ARCH}-debian-12" \
     ) ; \
     for COMPONENT in "${COMPONENTS[@]}"; do \
       if [ ! -f "${COMPONENT}.tar.gz" ]; then \
@@ -41,6 +41,11 @@ RUN mkdir -p /tmp/bitnami/pkg/cache/ ; cd /tmp/bitnami/pkg/cache/ ; \
       tar -zxf "${COMPONENT}.tar.gz" -C /opt/bitnami --strip-components=2 --no-same-owner --wildcards '*/files' ; \
       rm -rf "${COMPONENT}".tar.gz{,.sha256} ; \
     done
+
+RUN curl -SsLf "https://fastdl.mongodb.org/linux/mongodb-linux-aarch64-ubuntu2204-${MONGO_VERSION}.tgz" -O ; \
+    tar -zxf "mongodb-linux-aarch64-ubuntu2204-${MONGO_VERSION}.tgz" -C /opt/bitnami/mongodb --strip-components=1 --no-same-owner --wildcards '*/bin' ; \
+    rm -rf "mongodb-linux-aarch64-ubuntu2204-${MONGO_VERSION}.tgz" ;
+
 RUN apt-get autoremove --purge -y curl && \
     apt-get update && apt-get upgrade -y && \
     apt-get clean && rm -rf /var/lib/apt/lists /var/cache/apt/archives
